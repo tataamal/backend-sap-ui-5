@@ -32,4 +32,4 @@ Route::get('/sap-config-test', function () {
 
 Route::get('/production-orders', ProductionOrderController::class);
 Route::get('/sales-orders', SalesOrderController::class);
-Route::get('/local-sales-data', LocalSalesDataController::class);
+Route::get('/local-so-data', LocalSalesDataController::class);

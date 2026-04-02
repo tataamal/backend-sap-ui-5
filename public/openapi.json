@@ -1,141 +1,120 @@
 {
-  "openapi": "3.0.0",
-  "info": {
-    "title": "SAP Integration API",
-    "description": "API documentation for SAP Data Integration",
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "/",
-      "description": "Local Server"
-    }
-  ],
-  "components": {
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-API-KEY",
-        "description": "Secret Key used for Authentication"
-      }
-    }
-  },
-  "paths": {
-    "/api/local-sales-data": {
-      "get": {
-        "summary": "Fetch Encrypted Local Sales Data",
-        "description": "Ambil data tdata1 dan tdata2 dari database PostgreSQL lokal. Data telah dienkripsi dengan AES-256-CBC.",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "X-API-KEY",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Secret Key Authentication"
-          },
-          {
-            "name": "iv_werks",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "3000",
-                "2000"
-              ]
-            },
-            "description": "Plant ID"
-          },
-          {
-            "name": "iv_auart",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "ZOR2",
-                "ZOR1"
-              ]
-            },
-            "description": "Sales Document Type"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Data successfully retrieved and encrypted."
-                    },
-                    "encrypted_data": {
-                      "type": "string",
-                      "description": "Base64 encoded string containing the IV and AES encrypted payload.",
-                      "example": "m+C2lO0b..."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Missing or Invalid Secret Key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Unauthorized. Secret key is missing or invalid."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - Invalid Parameters",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Parameter iv_werks dan iv_auart tidak valid..."
-                    }
-                  }
-                }
-              }
-            }
-          }
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SAP Integration API",
+        "description": "API documentation for SAP Data Integration",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "Local Server"
         }
-      }
+    ],
+    "paths": {
+        "/api/local-so-data": {
+            "get": {
+                "summary": "Fetch Encrypted Local Sales Data",
+                "description": "Ambil data tdata1 dan tdata2 dari database PostgreSQL lokal. Data telah dienkripsi dengan AES-256-CBC.",
+                "parameters": [
+                    {
+                        "name": "api_key",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Secret Key Authentication"
+                    },
+                    {
+                        "name": "iv_werks",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["3000", "2000"]
+                        },
+                        "description": "Plant ID"
+                    },
+                    {
+                        "name": "iv_auart",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": ["ZOR2", "ZOR1"]
+                        },
+                        "description": "Sales Document Type"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data successfully retrieved and encrypted."
+                                        },
+                                        "encrypted_data": {
+                                            "type": "string",
+                                            "description": "Base64 encoded string containing the IV and AES encrypted payload.",
+                                            "example": "m+C2lO0b..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Missing or Invalid Secret Key",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized. Secret key is missing or invalid."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Invalid Parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Parameter iv_werks dan iv_auart tidak valid..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-  }
 }

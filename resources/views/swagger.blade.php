@@ -8,6 +8,11 @@
     <style>
         body { font-family: sans-serif; margin: 0; }
         .swagger-ui .topbar { background-color: #2c3e50; }
+        /* Perlebar ruang untuk kolom 'Name' pada tabel Parameter */
+        .swagger-ui .parameters-col_name {
+            width: 30% !important;
+            min-width: 250px !important;
+        }
     </style>
 </head>
 <body>
