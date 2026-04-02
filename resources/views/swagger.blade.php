@@ -13,6 +13,25 @@
             width: 30% !important;
             min-width: 250px !important;
         }
+        /* Hilangkan tulisan /openapi.json di bawah judul (secara agresif) */
+        .swagger-ui .info a {
+            display: none !important;
+        }
+        /* Kurangi jarak antara Judul, Deskripsi, dan kotak Servers */
+        .swagger-ui .info {
+            margin: 50px 0 10px 0 !important;
+        }
+        .swagger-ui .info .title {
+            margin-bottom: 0 !important;
+        }
+        .swagger-ui .info p {
+            margin: 5px 0 10px 0 !important;
+        }
+        .swagger-ui .scheme-container {
+            margin: 0 !important;
+            padding: 0 0 10px 0 !important;
+            box-shadow: none !important;
+        }
     </style>
 </head>
 <body>
