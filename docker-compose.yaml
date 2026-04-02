@@ -1,0 +1,319 @@
+version: "3.8"
+
+services:
+  # =========================
+  # WEB SERVER / FRANKENPHP
+  # =========================
+  web-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frankenphp
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+      - "2019:2019"
+    volumes:
+      - ./apps:/app
+      - ./Caddyfile:/etc/frankenphp/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./php-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
+    environment:
+      OCTANE_MAX_REQUESTS: 500
+      OCTANE_MAX_EXECUTION_TIME: 600
+      PHP_INI_MAX_EXECUTION_TIME: 600
+      PHP_MAX_EXECUTION_TIME: 600
+      PHP_MEMORY_LIMIT: "5120M"
+      CADDY_GLOBAL_OPTIONS: "admin 0.0.0.0:2019"
+      TZ: "Asia/Jakarta"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - server-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # =========================
+  # SCHEDULER YANG MASIH PAKAI MYSQL
+  # =========================
+  scheduler-daily-report:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scheduler-daily-report
+    restart: always
+    working_dir: /app/daily-report-produksi
+    command: php artisan schedule:work
+    volumes:
+      - ./apps:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - server-net
+
+  # =========================
+  # MYSQL LAMA
+  # =========================
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    command: >
+      --innodb-buffer-pool-size=8G
+      --innodb-log-file-size=2G
+      --innodb-log-buffer-size=64M
+      --innodb-flush-log-at-trx-commit=2
+    environment:
+      MYSQL_ROOT_PASSWORD: "singgampang"
+      TZ: "Asia/Jakarta"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - server-net
+    healthcheck:
+      test:
+        ["CMD-SHELL", "mysqladmin ping -h localhost -psinggampang || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "192.168.90.105:3306:3306"
+
+  # =========================
+  # POSTGRES SERVER BARU
+  # =========================
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "singgampang"
+      POSTGRES_DB: "postgres"
+      TZ: "Asia/Jakarta"
+      PGTZ: "Asia/Jakarta"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - server-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    ports:
+      - "192.168.90.105:5432:5432"
+
+  # =========================
+  # REDIS
+  # =========================
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - server-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mysql_data:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  server-net:
+    driver: bridge
+
+
+# version: "3.8"
+
+# services:
+#   # --- LAYANAN APLIKASI ---
+#   web-server:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: frankenphp
+#     restart: always
+#     ports:
+#       - "80:80"       # HTTP Publik
+#       - "443:443"     # HTTPS Publik (Auto SSL)
+#       - "443:443/udp" # HTTP/3
+#       - "2019:2019"   # Metrics Caddy (Internal)
+#     volumes:
+#       - ./apps:/app                  # Mount semua 9 aplikasi
+#       - ./Caddyfile:/etc/frankenphp/Caddyfile
+#       - caddy_data:/data             # Persistensi SSL
+#       - caddy_config:/config
+#       - ./php-custom.ini:/usr/local/etc/php/conf.d/99-custom.ini
+#     environment:
+#       # --- TUNING STABILITAS & PERFORMA ---
+#       # Restart worker setiap 500 request untuk mencegah memory leak
+#       OCTANE_MAX_REQUESTS: 500
+#       # Timeout 10 menit (600 detik) khusus untuk Export Excel berat
+#       OCTANE_MAX_EXECUTION_TIME: 600
+#       PHP_INI_MAX_EXECUTION_TIME: 600
+#       PHP_MAX_EXECUTION_TIME: 600
+#       # Izinkan PHP menggunakan RAM hingga 2GB per proses (penting untuk export besar)
+#       PHP_MEMORY_LIMIT: "5120M"
+#       # Opsi Global Caddy
+#       CADDY_GLOBAL_OPTIONS: "admin 0.0.0.0:2019"
+#       TZ: "Asia/Jakarta"
+#     # --- SAFETY LIMITS ---
+#     # Mencegah container memakan 100% RAM server dan membunuh MySQL/OS
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: '12.0'    # Sisakan 4 core untuk MySQL & OS
+#           memory: 12G     # Sisakan 4GB untuk MySQL & OS
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+#     extra_hosts:
+#       - "host.docker.internal:host-gateway"
+#   queue-confirmation-pro:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: queue-confirmation-pro
+#     restart: always
+#     # PENTING: Arahkan ke folder aplikasi spesifik di dalam container
+#     working_dir: /app/Confirmation-PRO
+#     # Perintah menjalankan Queue
+#     command: php artisan queue:work --queue=default -v
+#     volumes:
+#       # Mounting folder induk apps (sama seperti web-server)
+#       - ./apps:/app
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+
+#   queue-check-hasil-konfirmasi:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: queue-check-hasil-konfirmasi
+#     restart: always
+#     working_dir: /app/cohv-app
+#     command: php artisan queue:work
+#     volumes:
+#       - ./apps:/app
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+
+#   scheduler-validasi-doc:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: scheduler-validasi-doc
+#     restart: always
+#     # Folder project 1
+#     working_dir: /app/validasi_doc
+#     # Perintah langsung tanpa filter
+#     command: php artisan schedule:work
+#     volumes:
+#       - ./apps:/app
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+
+#   scheduler-daily-report:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: scheduler-daily-report
+#     restart: always
+#     # Folder project 2
+#     working_dir: /app/daily-report-produksi
+#     # Perintah langsung tanpa filter
+#     command: php artisan schedule:work
+#     volumes:
+#       - ./apps:/app
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+
+#   scheduler-report-wi:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: scheduler-report-wi
+#     restart: always
+#     # Folder project 2
+#     working_dir: /app/cohv-app
+#     # Perintah langsung tanpa filter
+#     command: php artisan schedule:work
+#     volumes:
+#       - ./apps:/app
+#     depends_on:
+#       - mysql
+#     networks:
+#       - server-net
+
+#   mysql:
+#     image: mysql:8.0
+#     command: >
+#       --innodb-buffer-pool-size=8G
+#       --innodb-log-file-size=2G
+#       --innodb-log-buffer-size=64M
+#       --innodb-flush-log-at-trx-commit=2
+#     container_name: mysql
+#     restart: always
+#     environment:
+#       MYSQL_ROOT_PASSWORD: 'singgampang'
+#     volumes:
+#       - ./mysql_data:/var/lib/mysql
+#     ports:
+#       - "3306:3306"
+#     networks:
+#       - server-net
+
+#   #Handle Cache menggunakan redis
+#   redis:
+#     image: redis:alpine
+#     container_name: redis
+#     restart: always
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis_data:/data
+#     command: redis-server --appendonly yes
+#     networks:
+#       - server-net
+# volumes:
+#   caddy_data:
+#   caddy_config:
+#   prometheus_data:
+#   grafana_data:
+#   redis_data:
+
+# networks:
+#   server-net:
+#     driver: bridge

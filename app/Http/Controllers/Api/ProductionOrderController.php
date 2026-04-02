@@ -9,11 +9,14 @@ use Illuminate\Http\JsonResponse;
 
 class ProductionOrderController extends Controller
 {
-    public function index(
-        ProductionOrderRequest $request,
-        ProductionOrderService $service
-    ): JsonResponse {
-        $data = $service->getByPlant(
+    public function __construct(
+        protected ProductionOrderService $productionOrderService
+    ) {
+    }
+
+    public function __invoke(ProductionOrderRequest $request): JsonResponse
+    {
+        $data = $this->productionOrderService->getByPlant(
             $request->input('p_werks'),
             $request->input('p_aufnr')
         );

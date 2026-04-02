@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\ProductionOrderController;
+use App\Http\Controllers\Api\SalesOrderController;
+use App\Http\Controllers\Api\LocalSalesDataController;
 
 
 
@@ -28,4 +30,6 @@ Route::get('/sap-config-test', function () {
 
 
 
-Route::get('/production-orders', [ProductionOrderController::class, 'index']);
+Route::get('/production-orders', ProductionOrderController::class);
+Route::get('/sales-orders', SalesOrderController::class);
+Route::get('/local-sales-data', LocalSalesDataController::class);

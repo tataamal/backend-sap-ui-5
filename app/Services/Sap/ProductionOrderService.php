@@ -15,4 +15,9 @@ class ProductionOrderService
 
         return $result['t_data1'] ?? [];
     }
+
+    public function getBySalesOrder(string $auart, string $werks, ?string $balance = null): array
+    {
+        return $this->flaskSapClient->getSalesOrders($auart, $werks, $balance);
+    }
 }
