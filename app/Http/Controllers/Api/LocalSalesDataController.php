@@ -13,7 +13,7 @@ class LocalSalesDataController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         // 1. AUTENTIKASI: Menggunakan Secret Key dari Header
-        $secretKey = config('services.local_api.secret_key', 'Kmi3Seamrang123'); // 32 characters expected
+        $secretKey = env('X_API_KEY'); // 32 characters expected
         $providedKey = $request->header('X-API-KEY') ?? $request->query('api_key');
 
         if (!$providedKey || $providedKey !== $secretKey) {
