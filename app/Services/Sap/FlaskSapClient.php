@@ -17,7 +17,7 @@ class FlaskSapClient
             $query['p_aufnr'] = $aufnr;
         }
 
-        $response = Http::timeout((int) config('services.sap_flask.timeout', 3600))
+        $response = Http::timeout((int) config('services.sap_flask.timeout', 21600))
             ->acceptJson()
             ->withHeaders([
                 'X-Internal-Token' => config('services.sap_flask.token'),
@@ -47,7 +47,7 @@ class FlaskSapClient
             $query['iv_balance'] = $balance;
         }
 
-        $response = Http::timeout((int) config('services.sap_flask.timeout', 3600))
+        $response = Http::timeout((int) config('services.sap_flask.timeout', 21600))
             ->acceptJson()
             ->withHeaders([
                 'X-Internal-Token' => config('services.sap_flask.token'),

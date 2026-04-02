@@ -24,6 +24,9 @@ class FetchSapSalesOrders extends Command
      */
     public function handle(ProductionOrderService $productionOrderService)
     {
+        // Mengizinkan script berjalan maksimum 6 jam (21600 detik)
+        set_time_limit(21600);
+
         $this->info("Fetching Sales Orders from SAP...");
 
         $params = [
