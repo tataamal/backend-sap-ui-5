@@ -15,7 +15,7 @@
         "/api/local-so-data": {
             "get": {
                 "summary": "API to get data SO Scheduling H-1",
-                "description": "T DATA1 dan T DATA2 dari hasil scheduling. Data telah dienkripsi dengan AES-256-CBC.\n\n### Cara Dekripsi Response (Contoh PHP):\n\n```php\n$secretKey = 'API_KEY_ANDA';\n$decodedPayload = base64_decode($response['encrypted_data']);\n\n$iv = substr($decodedPayload, 0, 16);\n$encryptedDatas = substr($decodedPayload, 16);\n\n$key = substr(hash('sha256', $secretKey, true), 0, 32);\n$jsonAsli = openssl_decrypt($encryptedDatas, 'aes-256-cbc', $key, 0, $iv);\n\n$data = json_decode($jsonAsli, true);\n```\n\n### Cara Dekripsi Response (Contoh Node.js / Javascript):\n\n```javascript\nconst crypto = require('crypto');\n\nconst secretKey = 'API_KEY_ANDA';\nconst encryptedPackage = response.encrypted_data; // Dari API\n\n// 1. Decode base64 payload\nconst buf = Buffer.from(encryptedPackage, 'base64');\n\n// 2. Ekstrak IV (16 bytes pertama) & sisa data terenkripsi\nconst iv = buf.subarray(0, 16);\nconst encryptedData = buf.subarray(16);\n\n// 3. Hash secretKey menjadi 32 bytes menggunakan SHA-256\nconst key = crypto.createHash('sha256').update(secretKey).digest();\n\n// 4. Proses Dekripsi AES-256-CBC\nconst decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);\ndecipher.setAutoPadding(true);\n\nlet decrypted = decipher.update(encryptedData, undefined, 'utf8');\ndecrypted += decipher.final('utf8');\n\nconst data = JSON.parse(decrypted);\nconsole.log(data);\n```",
+                "description": "T DATA1 dan T DATA2 dari hasil scheduling. Data dikirimkan secara langsung tanpa proses enkripsi.",
                 "parameters": [
                     {
                         "name": "X-API-KEY",
@@ -59,12 +59,21 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Data successfully retrieved and encrypted."
+                                            "example": "Data successfully retrieved."
                                         },
-                                        "encrypted_data": {
-                                            "type": "string",
-                                            "description": "Base64 encoded string containing the IV and AES encrypted payload.",
-                                            "example": "m+C2lO0b..."
+                                        "data": {
+                                            "type": "object",
+                                            "description": "Objek JSON mentah berisi t_data1 dan t_data2",
+                                            "properties": {
+                                                "t_data1": {
+                                                    "type": "array",
+                                                    "items": { "type": "object" }
+                                                },
+                                                "t_data2": {
+                                                    "type": "array",
+                                                    "items": { "type": "object" }
+                                                }
+                                            }
                                         }
                                     }
                                 }

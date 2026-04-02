@@ -49,29 +49,13 @@ class LocalSalesDataController extends Controller
             ->get()
             ->makeHidden($hiddenColumns);
 
-        // 2. ENKRIPSI: Mengenkripsi paket data agar aman
-        $payload = json_encode([
-            't_data1' => $tdata1,
-            't_data2' => $tdata2,
-        ]);
-
-        // Menggunakan AES-256-CBC untuk enkripsi
-        $cipher = 'aes-256-cbc';
-        // Memastikan key berukuran 32 bytes
-        $key = substr(hash('sha256', $secretKey, true), 0, 32);
-        // Generate random initialization vector (IV) - 16 bytes
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher));
-        
-        $encryptedDatas = openssl_encrypt($payload, $cipher, $key, 0, $iv);
-        
-        // Response dikemas dalam Base64 format: base64(IV::EncryptedData)
-        // Sehingga pihak client yang tahu SecretKey bisa mendekripsinya.
-        $encryptedPackage = base64_encode($iv . $encryptedDatas);
-
         return response()->json([
             'success' => true,
-            'message' => 'Data successfully retrieved and encrypted.',
-            'encrypted_data' => $encryptedPackage
+            'message' => 'Data successfully retrieved.',
+            'data' => [
+                't_data1' => $tdata1,
+                't_data2' => $tdata2,
+            ]
         ]);
     }
 }
