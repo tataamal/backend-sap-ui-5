@@ -29,11 +29,14 @@ class SalesOrderController extends Controller
 
         DB::beginTransaction();
         try {
-            // Hapus data lama sebelum insert data baru (agar tidak duplikat)
-            Outstanding_SO1::query()->delete();
-            Outstanding_SO2::query()->delete();
-            Outstanding_SO3::query()->delete();
-            Outstanding_SO4::query()->delete();
+            $iv_auart = $request->input('iv_auart');
+            $iv_werks = $request->input('iv_werks');
+
+            // Hapus data lama sesuai parameter sebelum insert data baru (agar tidak duplikat)
+            Outstanding_SO1::where('auart', $iv_auart)->where('werks', $iv_werks)->delete();
+            Outstanding_SO2::where('auart', $iv_auart)->where('werks', $iv_werks)->delete();
+            Outstanding_SO3::where('auart', $iv_auart)->where('werks', $iv_werks)->delete();
+            Outstanding_SO4::where('auart', $iv_auart)->where('werks', $iv_werks)->delete();
 
             $now = now();
 
