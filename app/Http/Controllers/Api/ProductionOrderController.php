@@ -16,6 +16,8 @@ class ProductionOrderController extends Controller
 
     public function __invoke(ProductionOrderRequest $request): JsonResponse
     {
+        set_time_limit(21600);
+
         $data = $this->productionOrderService->getByPlant(
             $request->input('p_werks'),
             $request->input('p_aufnr')

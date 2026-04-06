@@ -21,6 +21,8 @@ class SalesOrderController extends Controller
 
     public function __invoke(SalesOrderRequest $request): JsonResponse
     {
+        set_time_limit(21600);
+
         $result = $this->productionOrderService->getBySalesOrder(
             $request->input('iv_auart'),
             $request->input('iv_werks'),
