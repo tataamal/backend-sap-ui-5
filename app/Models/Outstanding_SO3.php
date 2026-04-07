@@ -84,5 +84,6 @@ class Outstanding_SO3 extends Model
         'prsimt',
         'name4',
         'kmtl',
+        'erdat',
     ];
 }

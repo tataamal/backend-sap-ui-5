@@ -84,5 +84,6 @@ class Outstanding_SO2 extends Model
         'prsimt',
         'name4',
         'kmtl',
+        'erdat',
     ];
 }
