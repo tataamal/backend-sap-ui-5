@@ -85,5 +85,6 @@ class Outstanding_SO2 extends Model
         'name4',
         'kmtl',
         'erdat',
+        'otsdo',
     ];
 }
